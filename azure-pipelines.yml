@@ -10,20 +10,35 @@ pool:
   vmImage: 'windows-latest'
 
 steps:
+# Install .NET SDK
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
     version: '6.x'
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
-- script: dotnet build --configuration Release
+# Restore dependencies
+- script: dotnet restore MyApp.sln
+  displayName: 'Restore dependencies'
+
+# Build project
+- script: dotnet build MyApp.sln --configuration Release --no-restore
   displayName: 'Build the project'
 
-- script: dotnet test --configuration Release --no-build
+# Run tests
+- script: dotnet test MyApp.sln --configuration Release --no-build --verbosity normal
   displayName: 'Run unit tests'
+
+# Publish build artifacts
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/MyApp/bin/Release'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
+    publishLocation: 'Container'
 
