@@ -18,21 +18,22 @@ steps:
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
 # Restore dependencies
-- script: dotnet restore MyApp.sln
+- script: dotnet restore dotnetcoresample.csproj
   displayName: 'Restore dependencies'
 
 # Build project
-- script: dotnet build MyApp.sln --configuration Release --no-restore
+- script: dotnet build dotnetcoresample.csproj --configuration Release --no-restore
   displayName: 'Build the project'
 
-# Run tests
-- script: dotnet test MyApp.sln --configuration Release --no-build --verbosity normal
-  displayName: 'Run unit tests'
+# Run tests (only if you have a test project)
+# If not, you can comment this step
+#- script: dotnet test --configuration Release --no-build --verbosity normal
+#  displayName: 'Run unit tests'
 
-# Publish build artifacts
+# Publish build output
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '$(Build.SourcesDirectory)/MyApp/bin/Release'
+    SourceFolder: '$(Build.SourcesDirectory)/bin/Release'
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
@@ -41,4 +42,3 @@ steps:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
-
